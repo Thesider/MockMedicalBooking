@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Edit, Trash2, Mail, Phone } from 'lucide-react';
 import AdminLayout from '../../layouts/AdminLayout';
 import DoctorList from '../../components/DoctorList';
@@ -23,6 +24,15 @@ const DoctorsAdminPage: React.FC = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
+        {/* Back to Home */}
+        <div className="mb-4">
+          <Link
+            to="/patient/dashboard"
+            className={`${styles.button} ${styles.buttonSecondary}`}
+          >
+            &larr; Back to Home
+          </Link>
+        </div>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

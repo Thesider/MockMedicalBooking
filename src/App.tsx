@@ -8,7 +8,7 @@ import CheckInPage from './pages/CheckInPage';
 import DoctorsPage from './pages/DoctorsPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import PatientDashboard from './pages/patient/PatientDashboard';
+const PatientDashboard = React.lazy(() => import('./pages/patient/PatientDashboard'));
 import PatientAppointments from './pages/patient/PatientAppointments';
 import DashboardPage from './pages/admin/DashboardPage';
 import DoctorsAdminPage from './pages/admin/DoctorsAdminPage';
@@ -25,11 +25,13 @@ function App() {
           <Route path="/doctors" element={<DoctorsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          
+
           {/* Protected Patient Routes */}
           <Route path="/patient/dashboard" element={
             <ProtectedRoute>
-              <PatientDashboard />
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <PatientDashboard />
+              </React.Suspense>
             </ProtectedRoute>
           } />
           <Route path="/patient/appointments" element={
@@ -37,7 +39,7 @@ function App() {
               <PatientAppointments />
             </ProtectedRoute>
           } />
-          
+
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<DashboardPage />} />
           <Route path="/admin/doctors" element={<DoctorsAdminPage />} />

@@ -41,16 +41,38 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 {item.name}
               </Link>
             ))}
-            
+
             {/* Auth Links */}
             {patient ? (
-              <Link
-                to="/patient/dashboard"
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              >
-                <User className="w-4 h-4" />
-                <span>Dashboard</span>
-              </Link>
+              <div className="relative group">
+                <button
+                  className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 focus:outline-none"
+                >
+                  <User className="w-4 h-4" />
+                  <span>{patient.firstName || 'Profile'}</span>
+                </button>
+                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 z-50">
+                  <Link
+                    to="/patient/dashboard"
+                    className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to sign out?')) {
+                        if (typeof window !== 'undefined') {
+                          localStorage.removeItem('auth');
+                          window.location.href = '/';
+                        }
+                      }
+                    }}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link
@@ -85,26 +107,40 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive(item.href)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
+                  className={`block px-3 py-2 rounded-md text-base font-medium ${isActive(item.href)
+                    ? 'text-blue-600 bg-blue-50'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
               ))}
-              
+
               {/* Mobile Auth Links */}
               {patient ? (
-                <Link
-                  to="/patient/dashboard"
-                  className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
+                <div className="space-y-1">
+                  <Link
+                    to="/patient/dashboard"
+                    className="block px-3 py-2 rounded-md text-base font-medium bg-blue-600 text-white"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to sign out?')) {
+                        if (typeof window !== 'undefined') {
+                          localStorage.removeItem('auth');
+                          window.location.href = '/';
+                        }
+                      }
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    Sign Out
+                  </button>
+                </div>
               ) : (
                 <>
                   <Link

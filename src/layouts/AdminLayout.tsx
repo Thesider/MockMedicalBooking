@@ -1,17 +1,18 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  Heart, 
-  LayoutDashboard, 
-  Users, 
-  Calendar, 
-  Settings, 
-  Menu, 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Heart,
+  LayoutDashboard,
+  Users,
+  Calendar,
+  Settings,
+  Menu,
   X,
   Bell,
   User
 } from 'lucide-react';
 import styles from '../styles/AdminLayout.module.css';
+import { useAuth } from '../contexts/AuthContext';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -19,6 +20,8 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
 
   const navigation = [
@@ -61,7 +64,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
       {/* Overlay for mobile */}
       {sidebarOpen && (
-        <div 
+        <div
           className={styles.overlay}
           onClick={() => setSidebarOpen(false)}
         />
@@ -81,11 +84,30 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </div>
 
           <div className={styles.topbarRight}>
-            <button className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
+            <button
+              type="button"
+              aria-label="Notifications"
+              className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100"
+            >
               <Bell className="w-5 h-5" />
             </button>
-            <button className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100">
+            <button
+              type="button"
+              aria-label="User Profile"
+              className="p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100"
+            >
               <User className="w-5 h-5" />
+            </button>
+            <button
+              type="button"
+              aria-label="Log Out"
+              className="p-2 rounded-md text-red-600 hover:text-white hover:bg-red-500 ml-2"
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+            >
+              Log Out
             </button>
           </div>
         </header>

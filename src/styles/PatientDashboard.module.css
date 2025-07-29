@@ -1,0 +1,15 @@
+.backButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #e5e7eb; /* Tailwind bg-gray-200 */
+  color: #1f2937;            /* Tailwind text-gray-800 */
+  transition: background-color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.backButton:hover {
+  background-color: #d1d5db; /* Tailwind hover:bg-gray-300 */
+}

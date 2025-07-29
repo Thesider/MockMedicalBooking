@@ -6,9 +6,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { LoginFormData } from '../types';
 import styles from '../styles/Components.module.css';
 
+const ADMIN_EMAIL = "admin@medicare.com";
+const ADMIN_PASSWORD = "admin123";
+
 const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
+  const [mode, setMode] = React.useState<'patient' | 'admin'>('patient');
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,18 +22,33 @@ const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors }
+    formState: { errors },
+    reset
   } = useForm<LoginFormData>();
 
   const onSubmit = async (data: LoginFormData) => {
     setLoginError('');
-    const success = await login(data.email, data.password);
-    
-    if (success) {
-      navigate(from, { replace: true });
+    if (mode === 'admin') {
+      if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
+        localStorage.setItem('admin', 'true');
+        navigate('/admin/dashboard');
+      } else {
+        setLoginError('Invalid admin credentials. Please try again.');
+      }
     } else {
-      setLoginError('Invalid email or password. Please try again.');
+      const success = await login(data.email, data.password);
+      if (success) {
+        navigate(from, { replace: true });
+      } else {
+        setLoginError('Invalid email or password. Please try again.');
+      }
     }
+  };
+
+  const handleModeSwitch = (newMode: 'patient' | 'admin') => {
+    setMode(newMode);
+    setLoginError('');
+    reset();
   };
 
   return (
@@ -41,8 +60,26 @@ const LoginPage: React.FC = () => {
             <Heart className="w-10 h-10 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">MediCare</span>
           </Link>
+          <div className="flex justify-center mb-4">
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-l-lg border ${mode === 'patient' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              onClick={() => handleModeSwitch('patient')}
+            >
+              Patient
+            </button>
+            <button
+              type="button"
+              className={`px-4 py-2 rounded-r-lg border-t border-b border-r ${mode === 'admin' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+              onClick={() => handleModeSwitch('admin')}
+            >
+              Admin
+            </button>
+          </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-          <p className="text-gray-600">Sign in to your patient account</p>
+          <p className="text-gray-600">
+            {mode === 'admin' ? 'Sign in to your admin account' : 'Sign in to your patient account'}
+          </p>
         </div>
 
         {/* Login Form */}
@@ -53,7 +90,7 @@ const LoginPage: React.FC = () => {
               <label className={styles.formLabel}>Email Address</label>
               <input
                 type="email"
-                {...register('email', { 
+                {...register('email', {
                   required: 'Email is required',
                   pattern: {
                     value: /^\S+@\S+$/i,
@@ -102,9 +139,8 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`${styles.button} ${styles.buttonPrimary} w-full ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+              className={`${styles.button} ${styles.buttonPrimary} w-full ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
@@ -114,20 +150,31 @@ const LoginPage: React.FC = () => {
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
             <h4 className="text-sm font-semibold text-blue-900 mb-2">Demo Credentials:</h4>
             <div className="text-sm text-blue-800 space-y-1">
-              <p><strong>Email:</strong> john.doe@email.com</p>
-              <p><strong>Password:</strong> password123</p>
+              {mode === 'admin' ? (
+                <>
+                  <p><strong>Email:</strong> admin@medicare.com</p>
+                  <p><strong>Password:</strong> admin123</p>
+                </>
+              ) : (
+                <>
+                  <p><strong>Email:</strong> john.doe@email.com</p>
+                  <p><strong>Password:</strong> password123</p>
+                </>
+              )}
             </div>
           </div>
 
           {/* Register Link */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                Sign up here
-              </Link>
-            </p>
-          </div>
+          {mode === 'patient' && (
+            <div className="mt-6 text-center">
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                  Sign up here
+                </Link>
+              </p>
+            </div>
+          )}
 
           {/* Back to Home */}
           <div className="mt-4 text-center">

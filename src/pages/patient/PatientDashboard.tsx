@@ -5,16 +5,17 @@ import PatientLayout from '../../layouts/PatientLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { appointments, doctors } from '../../data/mockData';
 import styles from '../../styles/Components.module.css';
+import dashboardStyles from '../../styles/PatientDashboard.module.css';
 
 const PatientDashboard: React.FC = () => {
   const { patient } = useAuth();
 
   // Get patient's appointments
-  const patientAppointments = appointments.filter(apt => 
+  const patientAppointments = appointments.filter(apt =>
     apt.email === patient?.email
   );
 
-  const upcomingAppointments = patientAppointments.filter(apt => 
+  const upcomingAppointments = patientAppointments.filter(apt =>
     apt.status === 'scheduled' || apt.status === 'checked-in'
   );
 
@@ -43,11 +44,27 @@ const PatientDashboard: React.FC = () => {
       icon: User,
       href: '/patient/profile',
       color: 'bg-purple-500'
+    },
+    {
+      title: 'Check-in',
+      description: 'Check in for your appointment',
+      icon: Clock,
+      href: '/check-in',
+      color: 'bg-yellow-500'
     }
   ];
 
   return (
     <PatientLayout>
+      {/* Back to Home */}
+      <div className="mb-4">
+        <Link
+          to="/"
+          className={dashboardStyles.backButton}
+        >
+          &larr; Back to Home
+        </Link>
+      </div>
       <div className="space-y-8">
         {/* Welcome Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-white">
@@ -60,22 +77,22 @@ const PatientDashboard: React.FC = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <Link
                 key={index}
                 to={action.href}
-                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-200"
+                className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300 border border-gray-200 w-full max-w-xs flex flex-col items-center"
               >
                 <div className={`${action.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
                   <Icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">
                   {action.title}
                 </h3>
-                <p className="text-gray-600">{action.description}</p>
+                <p className="text-gray-600 text-center">{action.description}</p>
               </Link>
             );
           })}
@@ -85,7 +102,7 @@ const PatientDashboard: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">Upcoming Appointments</h2>
-            <Link 
+            <Link
               to="/patient/appointments"
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
@@ -116,11 +133,10 @@ const PatientDashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          appointment.status === 'scheduled' 
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-green-100 text-green-800'
-                        }`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${appointment.status === 'scheduled'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                          }`}>
                           {appointment.status === 'scheduled' ? 'Scheduled' : 'Checked In'}
                         </span>
                         <p className="text-xs text-gray-500 mt-1">
@@ -136,7 +152,7 @@ const PatientDashboard: React.FC = () => {
             <div className="text-center py-8">
               <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No upcoming appointments</p>
-              <Link 
+              <Link
                 to="/appointment"
                 className={`${styles.button} ${styles.buttonPrimary} mt-4 inline-block`}
               >
@@ -157,7 +173,7 @@ const PatientDashboard: React.FC = () => {
                 {patient?.medicalHistory && patient.medicalHistory.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {patient.medicalHistory.map((condition, index) => (
-                      <span 
+                      <span
                         key={index}
                         className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm"
                       >
@@ -175,7 +191,7 @@ const PatientDashboard: React.FC = () => {
                 {patient?.allergies && patient.allergies.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {patient.allergies.map((allergy, index) => (
-                      <span 
+                      <span
                         key={index}
                         className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm flex items-center"
                       >
