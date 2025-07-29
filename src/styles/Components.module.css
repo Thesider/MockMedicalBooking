@@ -1,0 +1,190 @@
+/* Doctor Card */
+.doctorCard {
+  @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300;
+  @apply border border-gray-200 cursor-pointer;
+}
+
+.doctorPhoto {
+  @apply w-20 h-20 rounded-full object-cover mx-auto mb-4;
+}
+
+.doctorName {
+  @apply text-lg font-semibold text-gray-900 text-center mb-2;
+}
+
+.doctorSpecialization {
+  @apply text-blue-600 font-medium text-center mb-3;
+}
+
+.doctorAvailability {
+  @apply text-sm text-gray-600 text-center;
+}
+
+/* Form Styles */
+.formGroup {
+  @apply mb-6;
+}
+
+.formLabel {
+  @apply block text-sm font-semibold text-gray-700 mb-2;
+}
+
+.formInput {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply transition-colors duration-200;
+}
+
+.formSelect {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+  @apply bg-white transition-colors duration-200;
+}
+
+.formError {
+  @apply text-red-500 text-sm mt-1;
+}
+
+.button {
+  @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.buttonPrimary {
+  @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+}
+
+.buttonSecondary {
+  @apply bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+}
+
+.buttonSuccess {
+  @apply bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+}
+
+/* KPI Cards */
+.kpiCard {
+  @apply bg-white rounded-lg shadow-md p-6 border border-gray-200;
+}
+
+.kpiValue {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.kpiLabel {
+  @apply text-sm text-gray-600 mb-2;
+}
+
+.kpiChange {
+  @apply text-sm font-medium;
+}
+
+.kpiChangePositive {
+  @apply text-green-600;
+}
+
+.kpiChangeNegative {
+  @apply text-red-600;
+}
+
+/* Time Slot Grid */
+.timeSlotGrid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3;
+}
+
+.timeSlot {
+  @apply px-4 py-2 border border-gray-300 rounded-lg text-center cursor-pointer;
+  @apply transition-colors duration-200;
+}
+
+.timeSlotAvailable {
+  @apply hover:bg-blue-50 hover:border-blue-300;
+}
+
+.timeSlotSelected {
+  @apply bg-blue-600 text-white border-blue-600;
+}
+
+.timeSlotUnavailable {
+  @apply bg-gray-100 text-gray-400 cursor-not-allowed;
+}
+
+/* Search and Filter */
+.searchContainer {
+  @apply mb-6;
+}
+
+.searchInput {
+  @apply w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg;
+  @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.searchIcon {
+  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5;
+}
+
+.filterContainer {
+  @apply flex flex-wrap gap-4 mb-6;
+}
+
+.filterSelect {
+  @apply px-4 py-2 border border-gray-300 rounded-lg bg-white;
+  @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+/* Check-in */
+.checkInContainer {
+  @apply max-w-md mx-auto bg-white rounded-lg shadow-md p-8;
+}
+
+.checkInTabs {
+  @apply flex mb-6 border-b border-gray-200;
+}
+
+.checkInTab {
+  @apply flex-1 py-3 px-4 text-center font-medium cursor-pointer;
+  @apply border-b-2 border-transparent transition-colors duration-200;
+}
+
+.checkInTab.active {
+  @apply text-blue-600 border-blue-600;
+}
+
+.checkInResult {
+  @apply p-4 rounded-lg text-center;
+}
+
+.checkInSuccess {
+  @apply bg-green-50 text-green-800 border border-green-200;
+}
+
+.checkInError {
+  @apply bg-red-50 text-red-800 border border-red-200;
+}
+
+/* Animation utilities */
+.fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slideIn {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

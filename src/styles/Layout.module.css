@@ -1,0 +1,74 @@
+.mainLayout {
+  @apply min-h-screen bg-gray-50;
+}
+
+.header {
+  @apply bg-white shadow-md border-b border-gray-200;
+}
+
+.headerContent {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  @apply flex items-center justify-between h-16;
+}
+
+.logo {
+  @apply flex items-center space-x-2;
+}
+
+.logoIcon {
+  @apply w-8 h-8 text-blue-600;
+}
+
+.logoText {
+  @apply text-xl font-bold text-gray-900;
+}
+
+.nav {
+  @apply hidden sm:flex items-center space-x-8;
+}
+
+.navLink {
+  @apply text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200;
+  @apply relative;
+}
+
+.navLink.active {
+  @apply text-blue-600;
+}
+
+.navLink.active::after {
+  @apply absolute -bottom-6 left-0 right-0 h-0.5 bg-blue-600;
+  content: '';
+}
+
+.mobileMenuButton {
+  @apply sm:hidden p-2 rounded-md text-gray-600 hover:text-blue-600 hover:bg-gray-100;
+}
+
+.footer {
+  @apply bg-gray-900 text-white py-12 mt-16;
+}
+
+.footerContent {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.footerGrid {
+  @apply grid grid-cols-1 md:grid-cols-4 gap-8;
+}
+
+.footerSection h3 {
+  @apply text-lg font-semibold mb-4;
+}
+
+.footerSection ul {
+  @apply space-y-2;
+}
+
+.footerSection a {
+  @apply text-gray-300 hover:text-white transition-colors duration-200;
+}
+
+.footerBottom {
+  @apply border-t border-gray-800 mt-8 pt-8 text-center text-gray-400;
+}
