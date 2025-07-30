@@ -10,8 +10,10 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 const PatientDashboard = React.lazy(() => import('./pages/patient/PatientDashboard'));
 import PatientAppointments from './pages/patient/PatientAppointments';
+import PatientProfile from './pages/patient/PatientProfile';
 import DashboardPage from './pages/admin/DashboardPage';
 import DoctorsAdminPage from './pages/admin/DoctorsAdminPage';
+import InConstruction from './pages/InConstruction';
 
 function App() {
   return (
@@ -34,15 +36,31 @@ function App() {
               </React.Suspense>
             </ProtectedRoute>
           } />
+
           <Route path="/patient/appointments" element={
             <ProtectedRoute>
               <PatientAppointments />
             </ProtectedRoute>
           } />
 
+          {/* Patient Profile */}
+          <Route path="/patient/profile" element={
+            <ProtectedRoute>
+              <PatientProfile />
+            </ProtectedRoute>
+          } />
+
+          {/* Patient Records - Under Construction */}
+          <Route path="/patient/records" element={
+            <ProtectedRoute>
+              <InConstruction />
+            </ProtectedRoute>
+          } />
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<DashboardPage />} />
           <Route path="/admin/doctors" element={<DoctorsAdminPage />} />
+          <Route path="/admin/appointments" element={<InConstruction />} />
+          <Route path="/admin/settings" element={<InConstruction />} />
         </Routes>
       </Router>
     </AuthProvider>
