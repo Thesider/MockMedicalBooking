@@ -1,37 +1,61 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import { Heart, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { RegisterFormData } from '../types';
+import { useFormValidation } from '../hooks/useFormValidation';
+import { validateEmail, validatePassword, validateConfirmPassword, validateRequired, validatePhone, validateAge } from '../utils/validation';
+import FormField from '../components/FormField';
 import styles from '../styles/Components.module.css';
 
 const RegisterPage: React.FC = () => {
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [registerError, setRegisterError] = React.useState('');
   const { register: registerUser, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors }
-  } = useForm<RegisterFormData>();
-
-  const password = watch('password');
-
-  const onSubmit = async (data: RegisterFormData) => {
-    setRegisterError('');
-    const success = await registerUser(data);
-    
-    if (success) {
-      navigate('/patient/dashboard');
-    } else {
-      setRegisterError('Email already exists. Please use a different email address.');
-    }
+  const initialValues = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    phone: '',
+    dateOfBirth: ''
   };
+
+  const validationRules = {
+    firstName: (value: string) => validateRequired(value, 'First name'),
+    lastName: (value: string) => validateRequired(value, 'Last name'),
+    email: validateEmail,
+    password: validatePassword,
+    confirmPassword: (value: string, formData: any) => validateConfirmPassword(formData?.password || '', value),
+    phone: validatePhone,
+    dateOfBirth: validateAge
+  };
+
+  const {
+    values,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    getFieldError,
+    isFieldValid,
+    isFormValid
+  } = useFormValidation({
+    initialValues,
+    validationRules,
+    onSubmit: async (data) => {
+      setRegisterError('');
+      const success = await registerUser(data as RegisterFormData);
+      
+      if (success) {
+        navigate('/patient/dashboard');
+      } else {
+        setRegisterError('Email already exists. Please use a different email address.');
+      }
+    }
+  });
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -48,136 +72,105 @@ const RegisterPage: React.FC = () => {
 
         {/* Register Form */}
         <div className="bg-white rounded-lg shadow-md p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>First Name</label>
-                <input
-                  type="text"
-                  {...register('firstName', { required: 'First name is required' })}
-                  className={styles.formInput}
-                  placeholder="First name"
-                />
-                {errors.firstName && (
-                  <p className={styles.formError}>{errors.firstName.message}</p>
-                )}
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Last Name</label>
-                <input
-                  type="text"
-                  {...register('lastName', { required: 'Last name is required' })}
-                  className={styles.formInput}
-                  placeholder="Last name"
-                />
-                {errors.lastName && (
-                  <p className={styles.formError}>{errors.lastName.message}</p>
-                )}
-              </div>
+              <FormField
+                label="First Name"
+                name="firstName"
+                type="text"
+                value={values.firstName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={getFieldError('firstName')}
+                isValid={isFieldValid('firstName')}
+                placeholder="First name"
+                required
+              />
+              <FormField
+                label="Last Name"
+                name="lastName"
+                type="text"
+                value={values.lastName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={getFieldError('lastName')}
+                isValid={isFieldValid('lastName')}
+                placeholder="Last name"
+                required
+              />
             </div>
 
             {/* Email */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Email Address</label>
-              <input
-                type="email"
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: 'Invalid email address'
-                  }
-                })}
-                className={styles.formInput}
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className={styles.formError}>{errors.email.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Email Address"
+              name="email"
+              type="email"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('email')}
+              isValid={isFieldValid('email')}
+              placeholder="Enter your email"
+              required
+            />
 
             {/* Phone */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Phone Number</label>
-              <input
-                type="tel"
-                {...register('phone', { required: 'Phone number is required' })}
-                className={styles.formInput}
-                placeholder="+1 (555) 123-4567"
-              />
-              {errors.phone && (
-                <p className={styles.formError}>{errors.phone.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Phone Number"
+              name="phone"
+              type="tel"
+              value={values.phone}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('phone')}
+              isValid={isFieldValid('phone')}
+              placeholder="+1 (555) 123-4567"
+              required
+            />
 
             {/* Date of Birth */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Date of Birth</label>
-              <input
-                type="date"
-                {...register('dateOfBirth', { required: 'Date of birth is required' })}
-                className={styles.formInput}
-              />
-              {errors.dateOfBirth && (
-                <p className={styles.formError}>{errors.dateOfBirth.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Date of Birth"
+              name="dateOfBirth"
+              type="date"
+              value={values.dateOfBirth}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('dateOfBirth')}
+              isValid={isFieldValid('dateOfBirth')}
+              required
+            />
 
             {/* Password */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  {...register('password', { 
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
-                  })}
-                  className={styles.formInput}
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className={styles.formError}>{errors.password.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Password"
+              name="password"
+              type="password"
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('password')}
+              isValid={isFieldValid('password')}
+              placeholder="Create a password"
+              showPasswordToggle
+              required
+            />
 
             {/* Confirm Password */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Confirm Password</label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  {...register('confirmPassword', { 
-                    required: 'Please confirm your password',
-                    validate: value => value === password || 'Passwords do not match'
-                  })}
-                  className={styles.formInput}
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className={styles.formError}>{errors.confirmPassword.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={values.confirmPassword}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('confirmPassword')}
+              isValid={isFieldValid('confirmPassword')}
+              placeholder="Confirm your password"
+              showPasswordToggle
+              required
+            />
 
             {/* Error Message */}
             {registerError && (
@@ -189,9 +182,9 @@ const RegisterPage: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !isFormValid()}
               className={`${styles.button} ${styles.buttonPrimary} w-full ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                (isLoading || !isFormValid()) ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}

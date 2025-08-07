@@ -1,7 +1,8 @@
 import React from 'react';
-import { QrCode, Hash } from 'lucide-react';
+import { QrCode, Hash, MapPin, AlertTriangle, CheckCircle } from 'lucide-react';
 import MainLayout from '../layouts/MainLayout';
 import { appointments } from '../data/mockData';
+import { verifyLocationForCheckIn, formatDistance } from '../utils/geolocation';
 import styles from '../styles/Components.module.css';
 
 const CheckInPage: React.FC = () => {
@@ -11,8 +12,34 @@ const CheckInPage: React.FC = () => {
     status: 'success' | 'error' | null;
     message: string;
   }>({ status: null, message: '' });
+  const [locationStatus, setLocationStatus] = React.useState<{
+    verified: boolean | null;
+    message: string;
+    distance?: number;
+    loading: boolean;
+  }>({ verified: null, message: '', loading: false });
 
-  const handleCheckIn = () => {
+  const handleLocationVerification = async () => {
+    setLocationStatus({ verified: null, message: '', loading: true });
+    
+    try {
+      const result = await verifyLocationForCheckIn();
+      setLocationStatus({
+        verified: result.success,
+        message: result.message,
+        distance: result.distance,
+        loading: false
+      });
+    } catch (error) {
+      setLocationStatus({
+        verified: false,
+        message: 'Failed to verify location. Please try again.',
+        loading: false
+      });
+    }
+  };
+
+  const handleCheckIn = async () => {
     if (!inputValue.trim()) {
       setCheckInResult({
         status: 'error',
@@ -20,6 +47,18 @@ const CheckInPage: React.FC = () => {
       });
       return;
     }
+
+    // Verify location first
+    if (locationStatus.verified !== true) {
+      setCheckInResult({
+        status: 'error',
+        message: 'Please verify your location first before checking in.'
+      });
+      return;
+    }
+
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Simulate check-in validation
     const appointment = appointments.find(apt => 
@@ -51,7 +90,16 @@ const CheckInPage: React.FC = () => {
     // Simulate QR scanning with a mock result
     const mockQRResult = 'APT002';
     setInputValue(mockQRResult);
-    setTimeout(() => {
+    setTimeout(async () => {
+      // Verify location first
+      if (locationStatus.verified !== true) {
+        setCheckInResult({
+          status: 'error',
+          message: 'Please verify your location first before checking in.'
+        });
+        return;
+      }
+
       const appointment = appointments.find(apt => apt.reservationCode === mockQRResult);
       if (appointment) {
         setCheckInResult({
@@ -62,12 +110,76 @@ const CheckInPage: React.FC = () => {
     }, 1000);
   };
 
+  // Auto-verify location on component mount
+  React.useEffect(() => {
+    handleLocationVerification();
+  }, []);
+
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto py-12 px-4">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Check In for Your Appointment</h1>
           <p className="text-gray-600">Use your reservation code or scan your QR code to check in</p>
+        </div>
+
+        {/* Location Verification */}
+        <div className={`${
+          locationStatus.verified === true 
+            ? styles.locationSuccess 
+            : locationStatus.verified === false 
+            ? styles.locationError 
+            : styles.locationVerification
+        }`}>
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              {locationStatus.loading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              ) : locationStatus.verified === true ? (
+                <CheckCircle className="w-6 h-6 text-green-600" />
+              ) : locationStatus.verified === false ? (
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              ) : (
+                <MapPin className="w-6 h-6 text-blue-600" />
+              )}
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {locationStatus.loading 
+                  ? 'Verifying Location...' 
+                  : locationStatus.verified === true 
+                  ? 'Location Verified' 
+                  : locationStatus.verified === false 
+                  ? 'Location Verification Failed' 
+                  : 'Location Verification Required'
+                }
+              </h3>
+              <p className={`text-sm ${
+                locationStatus.verified === true 
+                  ? 'text-green-800' 
+                  : locationStatus.verified === false 
+                  ? 'text-red-800' 
+                  : 'text-blue-800'
+              }`}>
+                {locationStatus.message || 'You must be within 100m of the medical facility to check in.'}
+              </p>
+              {locationStatus.distance !== undefined && (
+                <p className="text-xs text-gray-600 mt-1">
+                  Distance from facility: {formatDistance(locationStatus.distance)}
+                </p>
+              )}
+              {locationStatus.verified !== true && !locationStatus.loading && (
+                <button
+                  onClick={handleLocationVerification}
+                  className={`${styles.locationButton} mt-3`}
+                  disabled={locationStatus.loading}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>Verify Location</span>
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className={styles.checkInContainer}>
@@ -112,7 +224,10 @@ const CheckInPage: React.FC = () => {
               </div>
               <button
                 onClick={handleCheckIn}
-                className={`${styles.button} ${styles.buttonPrimary} w-full`}
+                className={`${styles.button} ${styles.buttonPrimary} w-full ${
+                  locationStatus.verified !== true ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={locationStatus.verified !== true}
               >
                 Check In
               </button>
@@ -126,7 +241,10 @@ const CheckInPage: React.FC = () => {
                 <p className="text-gray-600 mb-4">Position your QR code in the scanner area</p>
                 <button
                   onClick={handleQRScan}
-                  className={`${styles.button} ${styles.buttonSecondary}`}
+                  className={`${styles.button} ${styles.buttonSecondary} ${
+                    locationStatus.verified !== true ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  disabled={locationStatus.verified !== true}
                 >
                   Simulate QR Scan
                 </button>

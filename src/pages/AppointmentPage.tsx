@@ -1,8 +1,10 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
 import { BookingFormData, TimeSlot } from '../types';
 import { doctors, timeSlots } from '../data/mockData';
 import MainLayout from '../layouts/MainLayout';
+import { useFormValidation } from '../hooks/useFormValidation';
+import { validateEmail, validateRequired, validateFutureDate } from '../utils/validation';
+import FormField from '../components/FormField';
 import styles from '../styles/Components.module.css';
 
 const AppointmentPage: React.FC = () => {
@@ -10,20 +12,46 @@ const AppointmentPage: React.FC = () => {
   const [availableSlots, setAvailableSlots] = React.useState<TimeSlot[]>([]);
   const [bookingSuccess, setBookingSuccess] = React.useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors }
-  } = useForm<BookingFormData>();
+  const initialValues = {
+    fullName: '',
+    email: '',
+    doctorId: '',
+    date: '',
+    timeSlot: ''
+  };
 
-  const selectedDoctorId = watch('doctorId');
-  const selectedTimeSlot = watch('timeSlot');
+  const validationRules = {
+    fullName: (value: string) => validateRequired(value, 'Full name'),
+    email: validateEmail,
+    doctorId: (value: string) => validateRequired(value, 'Doctor selection'),
+    date: validateFutureDate,
+    timeSlot: (value: string) => validateRequired(value, 'Time slot')
+  };
+
+  const {
+    values,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    getFieldError,
+    isFieldValid,
+    isFormValid
+  } = useFormValidation({
+    initialValues,
+    validationRules,
+    onSubmit: (data) => {
+      console.log('Booking data:', data);
+      // Simulate booking process
+      setTimeout(() => {
+        setBookingSuccess(true);
+      }, 1000);
+    }
+  });
+
 
   // Simulate getting available time slots
   React.useEffect(() => {
-    if (selectedDate && selectedDoctorId) {
+    if (selectedDate && values.doctorId) {
       const slots: TimeSlot[] = timeSlots.map(time => ({
         time,
         available: Math.random() > 0.3 // Simulate availability
@@ -32,15 +60,7 @@ const AppointmentPage: React.FC = () => {
     } else {
       setAvailableSlots([]);
     }
-  }, [selectedDate, selectedDoctorId]);
-
-  const onSubmit = (data: BookingFormData) => {
-    console.log('Booking data:', data);
-    // Simulate booking process
-    setTimeout(() => {
-      setBookingSuccess(true);
-    }, 1000);
-  };
+  }, [selectedDate, values.doctorId]);
 
   const getTomorrowDate = () => {
     const tomorrow = new Date();
@@ -84,74 +104,68 @@ const AppointmentPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Book an Appointment</h1>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Full Name */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Full Name *</label>
-              <input
-                type="text"
-                {...register('fullName', { required: 'Full name is required' })}
-                className={styles.formInput}
-                placeholder="Enter your full name"
-              />
-              {errors.fullName && (
-                <p className={styles.formError}>{errors.fullName.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Full Name"
+              name="fullName"
+              type="text"
+              value={values.fullName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('fullName')}
+              isValid={isFieldValid('fullName')}
+              placeholder="Enter your full name"
+              required
+            />
 
             {/* Email */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Email *</label>
-              <input
-                type="email"
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: 'Invalid email address'
-                  }
-                })}
-                className={styles.formInput}
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className={styles.formError}>{errors.email.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Email"
+              name="email"
+              type="email"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('email')}
+              isValid={isFieldValid('email')}
+              placeholder="Enter your email"
+              required
+            />
 
             {/* Doctor Selection */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Doctor *</label>
-              <select
-                {...register('doctorId', { required: 'Please select a doctor' })}
-                className={styles.formSelect}
-              >
-                <option value="">Select a doctor</option>
-                {doctors.map(doctor => (
-                  <option key={doctor.id} value={doctor.id}>
-                    {doctor.name} - {doctor.specialization}
-                  </option>
-                ))}
-              </select>
-              {errors.doctorId && (
-                <p className={styles.formError}>{errors.doctorId.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Doctor"
+              name="doctorId"
+              type="select"
+              value={values.doctorId}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('doctorId')}
+              isValid={isFieldValid('doctorId')}
+              placeholder="Select a doctor"
+              options={doctors.map(doctor => ({
+                value: doctor.id,
+                label: `${doctor.name} - ${doctor.specialization}`
+              }))}
+              required
+            />
 
             {/* Date */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Date *</label>
-              <input
-                type="date"
-                {...register('date', { required: 'Please select a date' })}
-                className={styles.formInput}
-                min={getTomorrowDate()}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-              {errors.date && (
-                <p className={styles.formError}>{errors.date.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Date"
+              name="date"
+              type="date"
+              value={values.date}
+              onChange={(name, value) => {
+                handleChange(name, value);
+                setSelectedDate(value);
+              }}
+              onBlur={handleBlur}
+              error={getFieldError('date')}
+              isValid={isFieldValid('date')}
+              required
+            />
 
             {/* Time Slots */}
             {availableSlots.length > 0 && (
@@ -163,11 +177,11 @@ const AppointmentPage: React.FC = () => {
                       key={slot.time}
                       type="button"
                       disabled={!slot.available}
-                      onClick={() => setValue('timeSlot', slot.time)}
+                      onClick={() => handleChange('timeSlot', slot.time)}
                       className={`${styles.timeSlot} ${
                         !slot.available 
                           ? styles.timeSlotUnavailable
-                          : selectedTimeSlot === slot.time
+                          : values.timeSlot === slot.time
                           ? styles.timeSlotSelected
                           : styles.timeSlotAvailable
                       }`}
@@ -176,16 +190,18 @@ const AppointmentPage: React.FC = () => {
                     </button>
                   ))}
                 </div>
-                {errors.timeSlot && (
-                  <p className={styles.formError}>Please select a time slot</p>
+                {getFieldError('timeSlot') && (
+                  <p className={styles.formError}>{getFieldError('timeSlot')}</p>
                 )}
               </div>
             )}
 
             <button
               type="submit"
-              disabled={!selectedTimeSlot}
-              className={`${styles.button} ${styles.buttonPrimary} w-full`}
+              disabled={!isFormValid()}
+              className={`${styles.button} ${styles.buttonPrimary} w-full ${
+                !isFormValid() ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               Book Appointment
             </button>

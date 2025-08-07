@@ -1,16 +1,17 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
 import { Heart, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { LoginFormData } from '../types';
+import { useFormValidation } from '../hooks/useFormValidation';
+import { validateEmail, validateRequired } from '../utils/validation';
+import FormField from '../components/FormField';
 import styles from '../styles/Components.module.css';
 
 const ADMIN_EMAIL = "admin@medicare.com";
 const ADMIN_PASSWORD = "admin123";
 
 const LoginPage: React.FC = () => {
-  const [showPassword, setShowPassword] = React.useState(false);
   const [loginError, setLoginError] = React.useState('');
   const [mode, setMode] = React.useState<'patient' | 'admin'>('patient');
   const { login, isLoading } = useAuth();
@@ -19,36 +20,53 @@ const LoginPage: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/patient/dashboard';
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<LoginFormData>();
+  const initialValues = {
+    email: '',
+    password: ''
+  };
 
-  const onSubmit = async (data: LoginFormData) => {
-    setLoginError('');
-    if (mode === 'admin') {
-      if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
-        localStorage.setItem('admin', 'true');
-        navigate('/admin/dashboard');
+  const validationRules = {
+    email: validateEmail,
+    password: (value: string) => validateRequired(value, 'Password')
+  };
+
+  const {
+    values,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    resetForm,
+    getFieldError,
+    isFieldValid,
+    isFormValid
+  } = useFormValidation({
+    initialValues,
+    validationRules,
+    onSubmit: async (data) => {
+      setLoginError('');
+      if (mode === 'admin') {
+        if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
+          localStorage.setItem('admin', 'true');
+          navigate('/admin/dashboard');
+        } else {
+          setLoginError('Invalid admin credentials. Please try again.');
+        }
       } else {
-        setLoginError('Invalid admin credentials. Please try again.');
-      }
-    } else {
-      const success = await login(data.email, data.password);
-      if (success) {
-        navigate(from, { replace: true });
-      } else {
-        setLoginError('Invalid email or password. Please try again.');
+        const success = await login(data.email, data.password);
+        if (success) {
+          navigate(from, { replace: true });
+        } else {
+          setLoginError('Invalid email or password. Please try again.');
+        }
       }
     }
-  };
+  });
+
 
   const handleModeSwitch = (newMode: 'patient' | 'admin') => {
     setMode(newMode);
     setLoginError('');
-    reset();
+    resetForm();
   };
 
   return (
@@ -84,49 +102,35 @@ const LoginPage: React.FC = () => {
 
         {/* Login Form */}
         <div className="bg-white rounded-lg shadow-md p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Email Address</label>
-              <input
-                type="email"
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^\S+@\S+$/i,
-                    message: 'Invalid email address'
-                  }
-                })}
-                className={styles.formInput}
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className={styles.formError}>{errors.email.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Email Address"
+              name="email"
+              type="email"
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('email')}
+              isValid={isFieldValid('email')}
+              placeholder="Enter your email"
+              required
+            />
 
             {/* Password */}
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Password</label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  {...register('password', { required: 'Password is required' })}
-                  className={styles.formInput}
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className={styles.formError}>{errors.password.message}</p>
-              )}
-            </div>
+            <FormField
+              label="Password"
+              name="password"
+              type="password"
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={getFieldError('password')}
+              isValid={isFieldValid('password')}
+              placeholder="Enter your password"
+              showPasswordToggle
+              required
+            />
 
             {/* Error Message */}
             {loginError && (
@@ -138,8 +142,8 @@ const LoginPage: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className={`${styles.button} ${styles.buttonPrimary} w-full ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
+              disabled={isLoading || !isFormValid()}
+              className={`${styles.button} ${styles.buttonPrimary} w-full ${(isLoading || !isFormValid()) ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
